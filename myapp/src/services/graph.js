@@ -1,46 +1,40 @@
-import { connect } from 'react-redux';
-import config from '../config';
+import { authProvider, parameters } from '../authProvider';
+import config from '../config.json';
 
-class GraphService {
-    constructor(props) {
-        this.graphUrl = config.azure.graph.endpoint;
-    }
+async function getUserInfo() {
+    const url = `${config.graph.endpoint}/me`;
+    const token = await authProvider.getAccessToken(parameters);
 
-    getUserInfo = async (token = this.props.accessToken) => {
-        // const headers = new Headers({ Authorization: `Bearer ${token}` });
-        const options = {
+    try {
+        const response = await fetch(url, {
             method: "GET",
-            headers: new Headers({
-                "Authorization": `Bearer ${token}`
-            }).entries(),
-            credentials: "same-origin"
-        };
-        return fetch(`${this.graphUrl}/me`, options)
-            .then(response => response.json())
-            .catch(response => {
-                throw new Error(response.text());
-            });
-    };
+            headers: {
+                'Authorization': `Bearer ${token.accessToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return response.json();
+    } catch (error) {
+        throw new Error(error.text());
+    }
+};
 
-    getUserPhoto = async (token = this.props.accessToken) => {
-        const headers = new Headers({ Authorization: `Bearer ${token}` });
-        const options = {
-            headers
-        };
-        return fetch(`${this.graphUrl}/me/photos/240x240/$value`, options)
-            .then(response => response.blob())
-            .catch(response => {
-                throw new Error(response.text());
-            });
-    };
-}
+async function getUserPhoto() {
+    const url = `${config.graph.endpoint}/me/photos/240x240/$value`;
+    const token = await authProvider.getAccessToken(parameters);
 
-const mapStateToProps = state => {
-    return {
-        accessToken: state.authentication.accessToken,
-        state: state.authentication.state,
-        account: state.authentication.account,
-    };
-}
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                'Authorization': `Bearer ${token.accessToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return await response.blob();
+    } catch (error) {
+        throw new Error(error.text());
+    }
+};
 
-export default connect(mapStateToProps)(GraphService);
+export { getUserInfo, getUserPhoto };
