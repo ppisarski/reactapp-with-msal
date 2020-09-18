@@ -1,4 +1,4 @@
-# react-msal
+# reactapp-with-msal
 
 Settings for the Azure App should be added to `myapp/src/config.json`.
 The file content should be as follows
